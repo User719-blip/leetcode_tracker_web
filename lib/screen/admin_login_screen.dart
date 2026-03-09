@@ -12,7 +12,7 @@ class AdminLoginScreen extends StatefulWidget {
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final controller = TextEditingController();
 
-  final String adminPassword = "admin123"; // change this
+  final String adminPassword = "admin1234"; // change this
 
   void login() {
     if (controller.text == adminPassword) {
