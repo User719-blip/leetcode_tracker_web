@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:leetcode_tracker_web/config/env_config.dart';
 import 'package:leetcode_tracker_web/screen/leaderboard_screen.dart';
 import 'package:leetcode_tracker_web/services/leetcode_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,9 +8,13 @@ import 'package:leetcode_tracker_web/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Validate required environment variables
+  EnvConfig.validate();
+
+  // Initialize Supabase with environment configuration
   await Supabase.initialize(
-    url: 'https://sukxolpjeagqybohmjdk.supabase.co',
-    anonKey: 'sb_publishable_4wLZsrO_wcctXP9RxpytVw_Or4uQshu',
+    url: EnvConfig.supabaseUrl,
+    anonKey: EnvConfig.supabaseAnonKey,
   );
 
   runApp(const MyApp());

@@ -17,7 +17,6 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
 
   // Data containers
   List<Map<String, dynamic>> mostActiveUsers = [];
-  Map<int, int> peakTimes = {};
   List<Map<String, dynamic>> globalTrends = [];
   Map<String, dynamic>? difficultyDistribution;
   Map<String, dynamic>? mostImprovedPlayer;
@@ -34,7 +33,6 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
     try {
       final results = await Future.wait([
         service.fetchMostActiveUsers(),
-        service.fetchPeakTimes(),
         service.fetchGlobalTrends(days: 90),
         service.fetchDifficultyDistribution(),
         service.fetchMostImprovedPlayer(),
@@ -42,10 +40,9 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
 
       setState(() {
         mostActiveUsers = results[0] as List<Map<String, dynamic>>;
-        peakTimes = results[1] as Map<int, int>;
-        globalTrends = results[2] as List<Map<String, dynamic>>;
-        difficultyDistribution = results[3] as Map<String, dynamic>;
-        mostImprovedPlayer = results[4] as Map<String, dynamic>?;
+        globalTrends = results[1] as List<Map<String, dynamic>>;
+        difficultyDistribution = results[2] as Map<String, dynamic>;
+        mostImprovedPlayer = results[3] as Map<String, dynamic>?;
         loading = false;
       });
     } catch (e) {
@@ -104,11 +101,6 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                     // Global Trends Chart
                     if (globalTrends.isNotEmpty)
                       GlobalTrendsChart(trends: globalTrends),
-                    const SizedBox(height: 24),
-
-                    // Peak Times Heatmap
-                    if (peakTimes.isNotEmpty)
-                      PeakTimesCard(peakTimes: peakTimes),
                     const SizedBox(height: 24),
 
                     // Most Active Users

@@ -20,12 +20,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   List<Map<String, dynamic>> filteredLeaderboard = [];
   bool loading = true;
   bool refreshing = false;
+  bool loadingMore = false;
   Map<String, dynamic> awards = {};
   Map<String, dynamic> globalStats = {};
   String searchQuery = '';
   String sortBy = 'score'; // score, total, hard, ranking
   String? errorMessage;
   late final AnimationController _shimmerController;
+  late final ScrollController _scrollController;
+
+  // Pagination
+  static const int pageSize = 20;
+  int currentPage = 1;
 
   @override
   void initState() {
@@ -34,13 +40,51 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
     loadData();
   }
 
   @override
   void dispose() {
     _shimmerController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients ||
+        loadingMore ||
+        filteredLeaderboard.isEmpty) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    final maxScroll = position.maxScrollExtent;
+    final currentScroll = position.pixels;
+
+    // Load more when user scrolls to 80% of the list
+    if (currentScroll >= maxScroll * 0.8) {
+      _loadMoreUsers();
+    }
+  }
+
+  Future<void> _loadMoreUsers() async {
+    if (loadingMore) return;
+
+    // Check if there are more users to load
+    final totalDisplayed = currentPage * pageSize;
+    if (totalDisplayed >= filteredLeaderboard.length) {
+      return;
+    }
+
+    setState(() => loadingMore = true);
+    await Future.delayed(const Duration(milliseconds: 300));
+    setState(() {
+      currentPage++;
+      loadingMore = false;
+    });
   }
 
   Future<void> loadData() async {
@@ -85,7 +129,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   Future<void> refreshData() async {
-    setState(() => refreshing = true);
+    setState(() {
+      refreshing = true;
+      currentPage = 1;
+    });
     await loadData();
   }
 
@@ -110,6 +157,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   void _applySearchFilter() {
     setState(() {
+      currentPage = 1;
       if (searchQuery.isEmpty) {
         filteredLeaderboard = List.from(leaderboard);
       } else {
@@ -130,10 +178,27 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   void _onSortChanged(String newSortBy) {
     setState(() {
       sortBy = newSortBy;
+      currentPage = 1;
       _sortLeaderboard(leaderboard);
       filteredLeaderboard = List.from(leaderboard);
       _applySearchFilter();
     });
+  }
+
+  /// Get paginated users based on current page
+  List<Map<String, dynamic>> _getPaginatedUsers() {
+    final startIndex = 0;
+    final endIndex = (currentPage * pageSize).clamp(
+      0,
+      filteredLeaderboard.length,
+    );
+    return filteredLeaderboard.sublist(startIndex, endIndex);
+  }
+
+  /// Check if there are more users to load
+  bool _hasMoreUsers() {
+    final totalDisplayed = currentPage * pageSize;
+    return totalDisplayed < filteredLeaderboard.length;
   }
 
   Color _rankColor(int rank) {
@@ -156,6 +221,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               onRefresh: refreshData,
               color: AppTheme.primary,
               child: CustomScrollView(
+                controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   SliverToBoxAdapter(
@@ -248,9 +314,28 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                         vertical: 8,
                       ),
                       sliver: SliverList.builder(
-                        itemCount: filteredLeaderboard.length,
+                        itemCount:
+                            _getPaginatedUsers().length +
+                            (_hasMoreUsers() ? 1 : 0),
                         itemBuilder: (context, index) {
-                          final user = filteredLeaderboard[index];
+                          // Show loading indicator at the end
+                          if (index == _getPaginatedUsers().length) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              child: Center(
+                                child: loadingMore
+                                    ? const CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppTheme.accent,
+                                            ),
+                                      )
+                                    : const SizedBox.shrink(),
+                              ),
+                            );
+                          }
+
+                          final user = _getPaginatedUsers()[index];
                           return LeaderboardUserCard(
                             user: user,
                             index: index,
@@ -277,7 +362,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    final isCompact = MediaQuery.sizeOf(context).width < 430;
+
     return AppBar(
+      titleSpacing: isCompact ? 8 : null,
       title: Row(
         children: [
           Container(
@@ -286,10 +374,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               gradient: AppTheme.primaryGradient,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.code, size: 24),
+            child: const Icon(Icons.code, size: 20),
           ),
-          const SizedBox(width: 12),
-          const Text('LeetCode War Room', style: AppTheme.heading3),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'LeetCode War Room',
+              style: AppTheme.heading3,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
         ],
       ),
       backgroundColor: AppTheme.backgroundCard,
@@ -316,52 +411,82 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
             onPressed: refreshing ? null : refreshData,
           ),
         ),
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          decoration: BoxDecoration(
+        if (isCompact)
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded),
             color: AppTheme.backgroundCardLight,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.download_rounded, color: AppTheme.accent),
-            tooltip: 'Export CSV',
-            onPressed: () => service.exportLeaderboardCSV(leaderboard),
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          decoration: BoxDecoration(
-            color: AppTheme.backgroundCardLight,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.analytics_rounded, color: AppTheme.accent),
-            tooltip: 'Analytics Dashboard',
-            onPressed: () {
-              Navigator.push(
-                context,
-                buildSlideFadeRoute(page: const AnalyticsDashboardScreen()),
-              );
+            onSelected: (value) {
+              if (value == 'export') {
+                service.exportLeaderboardCSV(leaderboard);
+              } else if (value == 'analytics') {
+                Navigator.push(
+                  context,
+                  buildSlideFadeRoute(page: const AnalyticsDashboardScreen()),
+                );
+              } else if (value == 'admin') {
+                Navigator.push(
+                  context,
+                  buildSlideFadeRoute(page: const AdminLoginScreen()),
+                );
+              }
             },
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'export', child: Text('Export CSV')),
+              PopupMenuItem(
+                value: 'analytics',
+                child: Text('Analytics Dashboard'),
+              ),
+              PopupMenuItem(value: 'admin', child: Text('Admin Panel')),
+            ],
+          )
+        else ...[
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.backgroundCardLight,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.download_rounded, color: AppTheme.accent),
+              tooltip: 'Export CSV',
+              onPressed: () => service.exportLeaderboardCSV(leaderboard),
+            ),
           ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-          decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-            borderRadius: BorderRadius.circular(8),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.backgroundCardLight,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.analytics_rounded, color: AppTheme.accent),
+              tooltip: 'Analytics Dashboard',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  buildSlideFadeRoute(page: const AnalyticsDashboardScreen()),
+                );
+              },
+            ),
           ),
-          child: IconButton(
-            icon: const Icon(Icons.admin_panel_settings_rounded),
-            tooltip: 'Admin Panel',
-            onPressed: () {
-              Navigator.push(
-                context,
-                buildSlideFadeRoute(page: const AdminLoginScreen()),
-              );
-            },
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+            decoration: BoxDecoration(
+              gradient: AppTheme.primaryGradient,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.admin_panel_settings_rounded),
+              tooltip: 'Admin Panel',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  buildSlideFadeRoute(page: const AdminLoginScreen()),
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

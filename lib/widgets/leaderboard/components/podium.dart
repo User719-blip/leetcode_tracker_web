@@ -41,47 +41,71 @@ class _TopThreePodiumState extends State<TopThreePodium>
     if (widget.leaderboard.length < 3) return const SizedBox();
 
     return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _StaggeredPodiumEntry(
-            delayMs: 120,
-            child: _PodiumCard(
-              user: widget.leaderboard[1],
-              rank: 2,
-              rankColor: widget.rankColor,
-            ),
-          ),
-          _StaggeredPodiumEntry(
-            delayMs: 260,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                _PodiumCard(
-                  user: widget.leaderboard[0],
-                  rank: 1,
-                  rankColor: widget.rankColor,
-                ),
-                Positioned.fill(
-                  top: -60,
-                  child: IgnorePointer(
-                    child: _ConfettiBurst(animation: _controller),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Responsive breakpoints
+          final isCompact = constraints.maxWidth < 420;
+          final isLarge = constraints.maxWidth > 600;
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                flex: 10,
+                child: _StaggeredPodiumEntry(
+                  delayMs: 120,
+                  child: _PodiumCard(
+                    user: widget.leaderboard[1],
+                    rank: 2,
+                    rankColor: widget.rankColor,
+                    compact: isCompact,
+                    large: isLarge,
                   ),
                 ),
-              ],
-            ),
-          ),
-          _StaggeredPodiumEntry(
-            delayMs: 400,
-            child: _PodiumCard(
-              user: widget.leaderboard[2],
-              rank: 3,
-              rankColor: widget.rankColor,
-            ),
-          ),
-        ],
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 11,
+                child: _StaggeredPodiumEntry(
+                  delayMs: 260,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _PodiumCard(
+                        user: widget.leaderboard[0],
+                        rank: 1,
+                        rankColor: widget.rankColor,
+                        compact: isCompact,
+                        large: isLarge,
+                      ),
+                      Positioned.fill(
+                        top: isCompact ? -44 : (isLarge ? -72 : -60),
+                        child: IgnorePointer(
+                          child: _ConfettiBurst(animation: _controller),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 10,
+                child: _StaggeredPodiumEntry(
+                  delayMs: 400,
+                  child: _PodiumCard(
+                    user: widget.leaderboard[2],
+                    rank: 3,
+                    rankColor: widget.rankColor,
+                    compact: isCompact,
+                    large: isLarge,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -121,21 +145,66 @@ class _PodiumCard extends StatelessWidget {
     required this.user,
     required this.rank,
     required this.rankColor,
+    required this.compact,
+    required this.large,
   });
 
   final Map<String, dynamic> user;
   final int rank;
   final Color Function(int rank) rankColor;
+  final bool compact;
+  final bool large;
 
   @override
   Widget build(BuildContext context) {
-    final height = rank == 1 ? 160.0 : 136.0;
+    late double height;
+    late double maxWidth;
+    late double iconSize;
+    late double rankFontSize;
+    late double usernameFontSize;
+    late double scoreFontSize;
+    late double padding;
+    late double spacingBetweenElements;
+
+    if (compact) {
+      // Small screens (iPhone SE, < 420px)
+      height = rank == 1 ? 148.0 : 126.0;
+      maxWidth = 120;
+      iconSize = rank == 1 ? 26 : 22;
+      rankFontSize = 34;
+      usernameFontSize = 13;
+      scoreFontSize = 14;
+      padding = 9;
+      spacingBetweenElements = 6;
+    } else if (large) {
+      // Large screens (desktop/tablet, > 600px)
+      height = rank == 1 ? 200.0 : 170.0;
+      maxWidth = 160;
+      iconSize = rank == 1 ? 42 : 36;
+      rankFontSize = 52;
+      usernameFontSize = 16;
+      scoreFontSize = 16;
+      padding = 14;
+      spacingBetweenElements = 10;
+    } else {
+      // Medium screens (regular phones, 420-600px)
+      height = rank == 1 ? 160.0 : 136.0;
+      maxWidth = 132;
+      iconSize = rank == 1 ? 32 : 28;
+      rankFontSize = 40;
+      usernameFontSize = 14;
+      scoreFontSize = 15;
+      padding = 12;
+      spacingBetweenElements = 8;
+    }
+
     final score = (user['score'] as num).toDouble();
     final color = rankColor(rank - 1);
 
     return Container(
-      width: 130,
+      width: double.infinity,
       height: height,
+      constraints: BoxConstraints(maxWidth: maxWidth),
       decoration: BoxDecoration(
         gradient: AppTheme.cardGradient,
         borderRadius: AppTheme.cardRadius,
@@ -152,7 +221,7 @@ class _PodiumCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(padding),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [color, color.withOpacity(0.6)],
@@ -164,23 +233,28 @@ class _PodiumCard extends StatelessWidget {
                           ? Icons.emoji_events_rounded
                           : Icons.military_tech_rounded,
                       color: Colors.white,
-                      size: rank == 1 ? 32 : 28,
+                      size: iconSize,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: spacingBetweenElements * 0.75),
                   Text(
                     '#$rank',
                     style: AppTheme.heading2.copyWith(
                       color: color,
                       fontWeight: FontWeight.bold,
+                      fontSize: rankFontSize,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: spacingBetweenElements * 0.75,
+                    ),
                     child: Text(
                       user['username'],
-                      style: AppTheme.bodyLarge,
+                      style: AppTheme.bodyLarge.copyWith(
+                        fontSize: usernameFontSize,
+                      ),
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       maxLines: 1,
@@ -188,8 +262,8 @@ class _PodiumCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: spacingBetweenElements,
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
@@ -201,6 +275,7 @@ class _PodiumCard extends StatelessWidget {
                       style: AppTheme.bodyLarge.copyWith(
                         color: color,
                         fontWeight: FontWeight.bold,
+                        fontSize: scoreFontSize,
                       ),
                     ),
                   ),

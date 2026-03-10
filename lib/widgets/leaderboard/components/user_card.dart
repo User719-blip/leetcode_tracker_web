@@ -32,6 +32,7 @@ class LeaderboardUserCard extends StatelessWidget {
         .toList();
     final weeklyBadge = user['weekly_badge']?.toString() ?? 'Weekly Starter';
     final monthlyBadge = user['monthly_badge']?.toString() ?? 'Monthly Starter';
+    final currentStreak = (user['current_streak'] as int?) ?? 0;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -225,6 +226,8 @@ class LeaderboardUserCard extends StatelessWidget {
                     weeklyBadge: weeklyBadge,
                     monthlyBadge: monthlyBadge,
                   ),
+                  const SizedBox(height: 10),
+                  _StreakBadge(streak: currentStreak),
                 ],
               ),
             ),
@@ -304,6 +307,60 @@ class _DifficultyChip extends StatelessWidget {
             count.toString(),
             style: AppTheme.bodyMedium.copyWith(
               color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StreakBadge extends StatelessWidget {
+  const _StreakBadge({required this.streak});
+
+  final int streak;
+
+  @override
+  Widget build(BuildContext context) {
+    final isOnFire = streak >= 7;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: isOnFire
+            ? LinearGradient(
+                colors: [
+                  const Color(0xFFFF6B35).withOpacity(0.9),
+                  const Color(0xFFFF4500).withOpacity(0.9),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : LinearGradient(
+                colors: [
+                  AppTheme.accent.withOpacity(0.8),
+                  AppTheme.secondary.withOpacity(0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isOnFire ? Icons.local_fire_department : Icons.check_circle,
+            color: Colors.white,
+            size: 16,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            isOnFire ? '$streak 🔥' : '$streak day${streak == 1 ? '' : 's'}',
+            style: AppTheme.labelLarge.copyWith(
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),

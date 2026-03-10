@@ -23,6 +23,13 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
+# Environment files (if using local .env for convenience)
+.env
+.env.local
+.env.*.local
+# Keep example files
+!.env.example
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id

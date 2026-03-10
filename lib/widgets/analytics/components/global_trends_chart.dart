@@ -25,28 +25,45 @@ class _GlobalTrendsChartState extends State<GlobalTrendsChart> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Row(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 520;
+              final title = const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.trending_up, color: AppTheme.accent, size: 28),
                   SizedBox(width: 12),
-                  Text(
-                    'Global Trends',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Flexible(
+                    child: Text(
+                      'Global Trends',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
-              ),
-              _MetricSelector(
+              );
+
+              final selector = _MetricSelector(
                 selected: selectedMetric,
                 onChanged: (value) => setState(() => selectedMetric = value),
-              ),
-            ],
+              );
+
+              if (compact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [title, const SizedBox(height: 12), selector],
+                );
+              }
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [title, selector],
+              );
+            },
           ),
           const SizedBox(height: 8),
           const Text(
@@ -86,34 +103,37 @@ class _MetricSelector extends StatelessWidget {
         color: AppTheme.backgroundDark,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _MetricButton(
-            label: 'Total',
-            value: 'total',
-            selected: selected,
-            onTap: onChanged,
-          ),
-          _MetricButton(
-            label: 'Easy',
-            value: 'easy',
-            selected: selected,
-            onTap: onChanged,
-          ),
-          _MetricButton(
-            label: 'Medium',
-            value: 'medium',
-            selected: selected,
-            onTap: onChanged,
-          ),
-          _MetricButton(
-            label: 'Hard',
-            value: 'hard',
-            selected: selected,
-            onTap: onChanged,
-          ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _MetricButton(
+              label: 'Total',
+              value: 'total',
+              selected: selected,
+              onTap: onChanged,
+            ),
+            _MetricButton(
+              label: 'Easy',
+              value: 'easy',
+              selected: selected,
+              onTap: onChanged,
+            ),
+            _MetricButton(
+              label: 'Medium',
+              value: 'medium',
+              selected: selected,
+              onTap: onChanged,
+            ),
+            _MetricButton(
+              label: 'Hard',
+              value: 'hard',
+              selected: selected,
+              onTap: onChanged,
+            ),
+          ],
+        ),
       ),
     );
   }

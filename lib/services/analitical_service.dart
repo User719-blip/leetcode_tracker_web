@@ -54,6 +54,7 @@ class AnalyticsService {
       final trend = _build7DayTrend(history, currentTotal);
       final weekly = _computeDelta(history, currentTotal, 7);
       final monthly = _computeDelta(history, currentTotal, 30);
+      final streak = _computeCurrentStreak(history);
 
       final completion = currentTotal / _estimatedLeetCodeProblemCount;
 
@@ -65,6 +66,7 @@ class AnalyticsService {
       user['completion_pct'] = completion.clamp(0.0, 1.0);
       user['weekly_badge'] = _weeklyBadge(weekly.delta);
       user['monthly_badge'] = _monthlyBadge(monthly.delta);
+      user['current_streak'] = streak;
     }
   }
 
@@ -135,6 +137,57 @@ class AnalyticsService {
     if (delta >= 40) return 'Monthly Warrior';
     if (delta >= 15) return 'Monthly Builder';
     return 'Monthly Starter';
+  }
+
+  /// Compute current daily solving streak from snapshots
+  /// A streak is consecutive days with at least 1 problem solved
+  int _computeCurrentStreak(List<Map<String, dynamic>> history) {
+    if (history.isEmpty) return 0;
+
+    // Sort history by date
+    final sorted = List<Map<String, dynamic>>.from(history);
+    sorted.sort((a, b) {
+      final dateA = DateTime.tryParse(a['date'].toString());
+      final dateB = DateTime.tryParse(b['date'].toString());
+      if (dateA == null || dateB == null) return 0;
+      return dateA.compareTo(dateB);
+    });
+
+    // Track previous total to detect solves
+    int streakCount = 0;
+    DateTime? lastStreakDate;
+
+    for (int i = 1; i < sorted.length; i++) {
+      final prev = sorted[i - 1];
+      final curr = sorted[i];
+
+      final prevTotal = (prev['total'] as num?)?.toInt() ?? 0;
+      final currTotal = (curr['total'] as num?)?.toInt() ?? 0;
+      final delta = currTotal - prevTotal;
+
+      final currDate = DateTime.tryParse(curr['date'].toString());
+      if (currDate == null) continue;
+
+      if (delta > 0) {
+        // User solved at least 1 problem on this day
+        if (lastStreakDate == null) {
+          // Start of streak
+          streakCount = 1;
+        } else {
+          final daysDiff = currDate.difference(lastStreakDate).inDays;
+          if (daysDiff == 1) {
+            // Consecutive day, continue streak
+            streakCount++;
+          } else {
+            // Gap in streak, reset
+            streakCount = 1;
+          }
+        }
+        lastStreakDate = currDate;
+      }
+    }
+
+    return streakCount;
   }
 
   Future<List<Map<String, dynamic>>> fetchUserSnapshots(String userId) async {
@@ -341,35 +394,6 @@ class AnalyticsService {
     });
 
     return result.take(limit).toList();
-  }
-
-  /// Analyze peak times based on snapshot creation timestamps
-  /// Returns hour distribution (0-23) with activity count
-  Future<Map<int, int>> fetchPeakTimes() async {
-    final thirtyDaysAgo = DateTime.now()
-        .subtract(const Duration(days: 30))
-        .toIso8601String()
-        .split('T')
-        .first;
-
-    final snapshots = await supabase
-        .from('snapshots')
-        .select('created_at')
-        .gte('date', thirtyDaysAgo);
-
-    final hourCounts = <int, int>{};
-
-    for (final snap in snapshots) {
-      final timestamp = snap['created_at']?.toString();
-      if (timestamp != null) {
-        final date = DateTime.tryParse(timestamp);
-        if (date != null) {
-          hourCounts[date.hour] = (hourCounts[date.hour] ?? 0) + 1;
-        }
-      }
-    }
-
-    return hourCounts;
   }
 
   /// Fetch global statistics trends over time (last 90 days)

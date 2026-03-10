@@ -18,10 +18,12 @@ class MostActiveUsersCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          const Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 6,
             children: [
               Icon(Icons.whatshot, color: AppTheme.accent, size: 28),
-              SizedBox(width: 12),
               Text(
                 'Most Active Users',
                 style: TextStyle(
@@ -65,97 +67,146 @@ class _UserActivityRow extends StatelessWidget {
     final activeDays = user['active_days'] as int? ?? 0;
     final totalSolved = user['total_solved'] as int? ?? 0;
 
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 360;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundDark,
+            borderRadius: BorderRadius.circular(12),
+            border: rank <= 3
+                ? Border.all(color: _getRankColor(rank), width: 2)
+                : null,
+          ),
+          child: isCompact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        _buildRankBadge(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            username,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      children: [
+                        _buildActiveDaysBadge(activeDays),
+                        _buildSolvedBadge(totalSolved),
+                      ],
+                    ),
+                  ],
+                )
+              : Row(
+                  children: [
+                    _buildRankBadge(),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        username,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    _buildActiveDaysBadge(activeDays),
+                    const SizedBox(width: 12),
+                    _buildSolvedBadge(totalSolved),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRankBadge() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: 40,
+      height: 40,
       decoration: BoxDecoration(
-        color: AppTheme.backgroundDark,
-        borderRadius: BorderRadius.circular(12),
-        border: rank <= 3
-            ? Border.all(color: _getRankColor(rank), width: 2)
+        gradient: rank <= 3
+            ? LinearGradient(
+                colors: [
+                  _getRankColor(rank),
+                  _getRankColor(rank).withOpacity(0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
             : null,
+        color: rank > 3 ? AppTheme.borderColor : null,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          rank.toString(),
+          style: TextStyle(
+            color: rank <= 3 ? Colors.white : Colors.white54,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActiveDaysBadge(int activeDays) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppTheme.accent, Color(0xFFFFA500)],
+        ),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Rank badge
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              gradient: rank <= 3
-                  ? LinearGradient(
-                      colors: [
-                        _getRankColor(rank),
-                        _getRankColor(rank).withOpacity(0.7),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: rank > 3 ? AppTheme.borderColor : null,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                rank.toString(),
-                style: TextStyle(
-                  color: rank <= 3 ? Colors.white : Colors.white54,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Username
-          Expanded(
-            child: Text(
-              username,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          // Active days badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.accent, Color(0xFFFFA500)],
-              ),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.calendar_today, color: Colors.white, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  '$activeDays days',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Total solved
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.borderColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              '$totalSolved solved',
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+          const Icon(Icons.calendar_today, color: Colors.white, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            '$activeDays days',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSolvedBadge(int totalSolved) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.borderColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        '$totalSolved solved',
+        style: const TextStyle(color: Colors.white70, fontSize: 14),
       ),
     );
   }
