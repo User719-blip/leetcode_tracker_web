@@ -8,16 +8,21 @@ import 'package:leetcode_tracker_web/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Validate required environment variables
-  EnvConfig.validate();
+  try {
+    // Validate required environment variables
+    EnvConfig.validate();
 
-  // Initialize Supabase with environment configuration
-  await Supabase.initialize(
-    url: EnvConfig.supabaseUrl,
-    anonKey: EnvConfig.supabaseAnonKey,
-  );
+    // Initialize Supabase with environment configuration
+    await Supabase.initialize(
+      url: EnvConfig.supabaseUrl,
+      anonKey: EnvConfig.supabaseAnonKey,
+    );
 
-  runApp(const MyApp());
+    runApp(const MyApp());
+  } catch (e) {
+    // Avoid blank white screens on web by rendering a visible startup error.
+    runApp(StartupErrorApp(message: e.toString()));
+  }
 }
 
 final supabase = Supabase.instance.client;
@@ -84,6 +89,65 @@ class AddUserScreen extends StatefulWidget {
 
   @override
   State<AddUserScreen> createState() => _AddUserScreenState();
+}
+
+class StartupErrorApp extends StatelessWidget {
+  const StartupErrorApp({super.key, required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: const Color(0xFF0B1020),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A223A),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFEF4444), width: 1),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'App Startup Error',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Deployment is missing required runtime configuration.',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      message,
+                      style: const TextStyle(
+                        color: Color(0xFFFCA5A5),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _AddUserScreenState extends State<AddUserScreen> {

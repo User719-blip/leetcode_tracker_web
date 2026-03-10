@@ -30,6 +30,16 @@ jobs:
       
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Validate required secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Missing SUPABASE_URL or SUPABASE_ANON_KEY GitHub Actions secret"
+            exit 1
+          fi
       
       - name: Build Flutter Web
         env:
