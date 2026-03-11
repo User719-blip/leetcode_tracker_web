@@ -245,17 +245,15 @@ class AnalyticsService {
   Future<Map<String, dynamic>> fetchGlobalStats() async {
     final users = await supabase.from('users').select();
 
-    final snapshots = await supabase
-        .from('snapshots')
-        .select()
-        .order('date', ascending: false);
+    // Use only latest snapshot per user to avoid inflated totals.
+    final latestSnapshots = await fetchLeaderboardData();
 
     int totalSolved = 0;
     int totalHard = 0;
 
-    for (var s in snapshots) {
-      totalSolved += s['total'] as int;
-      totalHard += s['hard'] as int;
+    for (final s in latestSnapshots) {
+      totalSolved += (s['total'] as num?)?.toInt() ?? 0;
+      totalHard += (s['hard'] as num?)?.toInt() ?? 0;
     }
 
     return {

@@ -134,6 +134,44 @@ class _SortDropdown extends StatelessWidget {
           style: AppTheme.bodyLarge,
           items: const [
             DropdownMenuItem(
+              value: 'overall_solved',
+              child: Row(
+                children: [
+                  Icon(Icons.public_rounded, size: 18, color: AppTheme.accent),
+                  SizedBox(width: 8),
+                  Text('Overall Solved'),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'weekly_solved',
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.calendar_view_week_rounded,
+                    size: 18,
+                    color: AppTheme.secondary,
+                  ),
+                  SizedBox(width: 8),
+                  Text('Weekly Solved'),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
+              value: 'monthly_solved',
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.calendar_month_rounded,
+                    size: 18,
+                    color: AppTheme.primary,
+                  ),
+                  SizedBox(width: 8),
+                  Text('Monthly Solved'),
+                ],
+              ),
+            ),
+            DropdownMenuItem(
               value: 'score',
               child: Row(
                 children: [

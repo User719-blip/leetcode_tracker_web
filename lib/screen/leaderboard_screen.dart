@@ -24,7 +24,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   Map<String, dynamic> awards = {};
   Map<String, dynamic> globalStats = {};
   String searchQuery = '';
-  String sortBy = 'score'; // score, total, hard, ranking
+  String sortBy = 'overall_solved';
   String? errorMessage;
   late final AnimationController _shimmerController;
   late final ScrollController _scrollController;
@@ -138,6 +138,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
 
   void _sortLeaderboard(List<Map<String, dynamic>> data) {
     switch (sortBy) {
+      case 'overall_solved':
+        data.sort((a, b) => (b['total'] as int).compareTo(a['total'] as int));
+        break;
+      case 'weekly_solved':
+        data.sort(
+          (a, b) => ((b['weekly_delta'] as num?)?.toInt() ?? 0).compareTo(
+            (a['weekly_delta'] as num?)?.toInt() ?? 0,
+          ),
+        );
+        break;
+      case 'monthly_solved':
+        data.sort(
+          (a, b) => ((b['monthly_delta'] as num?)?.toInt() ?? 0).compareTo(
+            (a['monthly_delta'] as num?)?.toInt() ?? 0,
+          ),
+        );
+        break;
       case 'total':
         data.sort((a, b) => (b['total'] as int).compareTo(a['total'] as int));
         break;
@@ -235,24 +252,30 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Wrap(
-                        spacing: 16,
-                        runSpacing: 16,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          GlobalStatsCard(
-                            title: 'Users',
-                            value: '${globalStats['users'] ?? 0}',
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 980),
+                          child: Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              GlobalStatsCard(
+                                title: 'Users',
+                                value: '${globalStats['users'] ?? 0}',
+                              ),
+                              GlobalStatsCard(
+                                title: 'Total Solved',
+                                value: '${globalStats['totalSolved'] ?? 0}',
+                              ),
+                              GlobalStatsCard(
+                                title: 'Hard Problems',
+                                value: '${globalStats['totalHard'] ?? 0}',
+                              ),
+                            ],
                           ),
-                          GlobalStatsCard(
-                            title: 'Total Solved',
-                            value: '${globalStats['totalSolved'] ?? 0}',
-                          ),
-                          GlobalStatsCard(
-                            title: 'Hard Problems',
-                            value: '${globalStats['totalHard'] ?? 0}',
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -267,25 +290,31 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
-                        child: Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            AwardCard(title: 'MVP', user: awards['mvp']),
-                            AwardCard(
-                              title: 'Rank Climber',
-                              user: awards['rankClimber'],
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 980),
+                            child: Wrap(
+                              spacing: 16,
+                              runSpacing: 16,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                AwardCard(title: 'MVP', user: awards['mvp']),
+                                AwardCard(
+                                  title: 'Rank Climber',
+                                  user: awards['rankClimber'],
+                                ),
+                                AwardCard(
+                                  title: 'Slowest',
+                                  user: awards['slowest'],
+                                ),
+                                AwardCard(
+                                  title: 'Hard Pusher',
+                                  user: awards['hardPusher'],
+                                ),
+                              ],
                             ),
-                            AwardCard(
-                              title: 'Slowest',
-                              user: awards['slowest'],
-                            ),
-                            AwardCard(
-                              title: 'Hard Pusher',
-                              user: awards['hardPusher'],
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -340,6 +369,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                             user: user,
                             index: index,
                             rankColor: _rankColor,
+                            rankingMode: sortBy,
                             onTap: () {
                               Navigator.push(
                                 context,

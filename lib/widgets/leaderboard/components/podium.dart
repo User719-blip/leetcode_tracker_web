@@ -48,62 +48,80 @@ class _TopThreePodiumState extends State<TopThreePodium>
           final isCompact = constraints.maxWidth < 420;
           final isLarge = constraints.maxWidth > 600;
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                flex: 10,
-                child: _StaggeredPodiumEntry(
-                  delayMs: 120,
-                  child: _PodiumCard(
-                    user: widget.leaderboard[1],
-                    rank: 2,
-                    rankColor: widget.rankColor,
-                    compact: isCompact,
-                    large: isLarge,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 11,
-                child: _StaggeredPodiumEntry(
-                  delayMs: 260,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      _PodiumCard(
-                        user: widget.leaderboard[0],
-                        rank: 1,
-                        rankColor: widget.rankColor,
-                        compact: isCompact,
-                        large: isLarge,
-                      ),
-                      Positioned.fill(
-                        top: isCompact ? -44 : (isLarge ? -72 : -60),
-                        child: IgnorePointer(
-                          child: _ConfettiBurst(animation: _controller),
+          final rowGap = isLarge ? 16.0 : 8.0;
+          final rowMaxWidth = isLarge ? 860.0 : constraints.maxWidth;
+
+          return Align(
+            alignment: Alignment.center,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: rowMaxWidth),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    flex: 10,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: _StaggeredPodiumEntry(
+                        delayMs: 120,
+                        child: _PodiumCard(
+                          user: widget.leaderboard[1],
+                          rank: 2,
+                          rankColor: widget.rankColor,
+                          compact: isCompact,
+                          large: isLarge,
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 10,
-                child: _StaggeredPodiumEntry(
-                  delayMs: 400,
-                  child: _PodiumCard(
-                    user: widget.leaderboard[2],
-                    rank: 3,
-                    rankColor: widget.rankColor,
-                    compact: isCompact,
-                    large: isLarge,
+                  SizedBox(width: rowGap),
+                  Expanded(
+                    flex: 11,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: _StaggeredPodiumEntry(
+                        delayMs: 260,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            _PodiumCard(
+                              user: widget.leaderboard[0],
+                              rank: 1,
+                              rankColor: widget.rankColor,
+                              compact: isCompact,
+                              large: isLarge,
+                            ),
+                            Positioned.fill(
+                              top: isCompact ? -44 : (isLarge ? -72 : -60),
+                              child: IgnorePointer(
+                                child: _ConfettiBurst(animation: _controller),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(width: rowGap),
+                  Expanded(
+                    flex: 10,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: _StaggeredPodiumEntry(
+                        delayMs: 400,
+                        child: _PodiumCard(
+                          user: widget.leaderboard[2],
+                          rank: 3,
+                          rankColor: widget.rankColor,
+                          compact: isCompact,
+                          large: isLarge,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),

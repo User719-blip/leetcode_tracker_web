@@ -9,12 +9,14 @@ class LeaderboardUserCard extends StatelessWidget {
     required this.user,
     required this.index,
     required this.rankColor,
+    required this.rankingMode,
     required this.onTap,
   });
 
   final Map<String, dynamic> user;
   final int index;
   final Color Function(int rank) rankColor;
+  final String rankingMode;
   final VoidCallback onTap;
 
   static String heroTagForUser(String userId) => 'leaderboard-user-$userId';
@@ -22,6 +24,8 @@ class LeaderboardUserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentScore = (user['score'] as num).toDouble();
+    final weeklyDelta = (user['weekly_delta'] as num?)?.toInt() ?? 0;
+    final monthlyDelta = (user['monthly_delta'] as num?)?.toInt() ?? 0;
     final isTopThree = index < 3;
     final userId = user['user_id'].toString();
     final weeklyPct = (user['weekly_change_pct'] as num?)?.toDouble() ?? 0.0;
@@ -33,6 +37,24 @@ class LeaderboardUserCard extends StatelessWidget {
     final weeklyBadge = user['weekly_badge']?.toString() ?? 'Weekly Starter';
     final monthlyBadge = user['monthly_badge']?.toString() ?? 'Monthly Starter';
     final currentStreak = (user['current_streak'] as int?) ?? 0;
+
+    final displayValue = switch (rankingMode) {
+      'overall_solved' => (user['total'] as num?)?.toInt() ?? 0,
+      'weekly_solved' => weeklyDelta,
+      'monthly_solved' => monthlyDelta,
+      _ => currentScore,
+    };
+
+    final displayLabel = switch (rankingMode) {
+      'overall_solved' => 'Overall',
+      'weekly_solved' => '7D Solved',
+      'monthly_solved' => '30D Solved',
+      _ => 'Score',
+    };
+
+    final displayText = displayValue is double
+        ? displayValue.toStringAsFixed(1)
+        : displayValue.toString();
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
@@ -154,14 +176,14 @@ class LeaderboardUserCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              currentScore.toStringAsFixed(1),
+                              displayText,
                               style: AppTheme.heading3.copyWith(
                                 color: Colors.white,
                               ),
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text('Score', style: AppTheme.bodySmall),
+                          Text(displayLabel, style: AppTheme.bodySmall),
                         ],
                       ),
                     ],
