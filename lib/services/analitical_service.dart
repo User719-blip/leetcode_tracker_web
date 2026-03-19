@@ -1,5 +1,4 @@
 import 'package:csv/csv.dart';
-import 'package:leetcode_tracker_web/services/leetcode_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:html' as html;
 
@@ -264,24 +263,9 @@ class AnalyticsService {
   }
 
   Future<void> updateAllUsers() async {
-    final supabase = Supabase.instance.client;
-
-    final users = await supabase.from('users').select();
-
-    final service = LeetCodeService();
-
-    for (var user in users) {
-      final stats = await service.fetchStats(user['username']);
-
-      await supabase.from('snapshots').upsert({
-        "user_id": user['id'],
-        "date": DateTime.now().toIso8601String().split("T").first,
-        "easy": stats['easy'],
-        "medium": stats['medium'],
-        "hard": stats['hard'],
-        "total": stats['total'],
-        "ranking": stats['ranking'],
-      });
+    final response = await supabase.functions.invoke('daily-update');
+    if (response.status != 200) {
+      throw Exception(response.data?['error'] ?? 'Failed to run daily update');
     }
   }
 

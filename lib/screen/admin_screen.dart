@@ -26,6 +26,22 @@ class _AdminScreenState extends State<AdminScreen> {
     loadUsers();
   }
 
+  Future<Map<String, dynamic>> _callAdminUsersFunction(
+    String action, {
+    Map<String, dynamic>? payload,
+  }) async {
+    final response = await supabase.functions.invoke(
+      'admin-users',
+      body: {'action': action, if (payload != null) 'payload': payload},
+    );
+
+    if (response.status != 200) {
+      throw Exception(response.data?['error'] ?? 'Request failed');
+    }
+
+    return Map<String, dynamic>.from(response.data as Map);
+  }
+
   Future<void> loadUsers() async {
     setState(() {
       loading = true;
@@ -33,9 +49,10 @@ class _AdminScreenState extends State<AdminScreen> {
     });
 
     try {
-      final data = await supabase.from('users').select();
+      final result = await _callAdminUsersFunction('listUsers');
+      final data = List<Map<String, dynamic>>.from(result['users'] ?? []);
       setState(() {
-        users = List<Map<String, dynamic>>.from(data);
+        users = data;
         loading = false;
       });
     } catch (e) {
@@ -61,7 +78,7 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() => updating = true);
 
     try {
-      await supabase.from('users').insert({"username": username});
+      await _callAdminUsersFunction('addUser', payload: {'username': username});
       controller.clear();
       await loadUsers();
 
@@ -119,7 +136,7 @@ class _AdminScreenState extends State<AdminScreen> {
     setState(() => updating = true);
 
     try {
-      await supabase.from('users').delete().eq('id', id);
+      await _callAdminUsersFunction('deleteUser', payload: {'id': id});
       await loadUsers();
 
       if (mounted) {
@@ -504,7 +521,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                             ? null
                                             : () {
                                                 deleteUser(
-                                                  user['id'],
+                                                  user['id'].toString(),
                                                   user['username'],
                                                 );
                                               },

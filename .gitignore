@@ -40,6 +40,7 @@ migrate_working_dir/
 .pub/
 /build/
 
+
 # Flutter web build output accidentally generated at repository root
 /assets/
 /canvaskit/
@@ -55,6 +56,8 @@ migrate_working_dir/
 
 # Supabase local temp artifacts
 /supabase/.temp/
+/supabase/.env
+/supabase/.env.local
 
 # Symbolication related
 app.*.symbols
