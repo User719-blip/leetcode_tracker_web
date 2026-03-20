@@ -1,0 +1,14 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "snapshots",
+    "service_role_privileges_count": 7,
+    "schema_status": "✓ Public schema (accessible)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "service_role_privileges_count": 7,
+    "schema_status": "✓ Public schema (accessible)"
+  }
+]

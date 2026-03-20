@@ -1,0 +1,44 @@
+[
+  {
+    "grantee": "anon",
+    "table_schema": "public",
+    "table_name": "snapshots",
+    "privileges": "REFERENCES, SELECT, TRIGGER, TRUNCATE",
+    "audit_note": "→ Check: anon"
+  },
+  {
+    "grantee": "authenticated",
+    "table_schema": "public",
+    "table_name": "snapshots",
+    "privileges": "REFERENCES, SELECT, TRIGGER, TRUNCATE",
+    "audit_note": "→ Check: authenticated"
+  },
+  {
+    "grantee": "service_role",
+    "table_schema": "public",
+    "table_name": "snapshots",
+    "privileges": "DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE",
+    "audit_note": "⚠ WARNING: Write access granted to service_role"
+  },
+  {
+    "grantee": "anon",
+    "table_schema": "public",
+    "table_name": "users",
+    "privileges": "REFERENCES, SELECT, TRIGGER, TRUNCATE",
+    "audit_note": "→ Check: anon"
+  },
+  {
+    "grantee": "authenticated",
+    "table_schema": "public",
+    "table_name": "users",
+    "privileges": "REFERENCES, SELECT, TRIGGER, TRUNCATE",
+    "audit_note": "→ Check: authenticated"
+  },
+  {
+    "grantee": "service_role",
+    "table_schema": "public",
+    "table_name": "users",
+    "privileges": "DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE",
+    "audit_note": "⚠ WARNING: Write access granted to service_role"
+  }
+]

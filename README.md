@@ -19,7 +19,7 @@ A Flutter web application for tracking and visualizing LeetCode progress with le
 
 2. **Run locally**
    
-   The repo includes `.vscode/launch.json` with your credentials configured.
+   Configure local runtime values with `--dart-define` flags, or keep local-only values in an untracked launch configuration.
    
    **Using VS Code:** Press F5 or select "leetcode_tracker_web (chrome)" from Run menu
    
@@ -73,7 +73,8 @@ flutter build web \
 
 ## 🔒 Security
 
-✅ **Safe to commit:** `.vscode/launch.json` with Supabase anon keys (they're public by design)  
+✅ **Safe to expose at runtime:** Supabase anon keys are public by design for frontend apps  
+⚠️ **Recommended:** Do not commit project-specific credentials or URLs in shared editor launch configs  
 ✅ **Protected:** All database operations secured by Supabase Row Level Security (RLS)  
 ❌ **Never commit:** Service role keys or passwords  
 ✅ **GitHub Secrets:** Used in CI/CD for production deployments

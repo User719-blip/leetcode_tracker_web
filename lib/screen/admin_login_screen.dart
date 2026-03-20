@@ -30,10 +30,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
     setState(() => isLoggingIn = true);
     try {
-      await Supabase.instance.client.auth.signInWithPassword(
+      final response = await Supabase.instance.client.auth.signInWithPassword(
         email: email,
         password: password,
       );
+
+      if (response.session == null) {
+        throw Exception(
+          'No active session returned. Verify email/password and confirm the user in Supabase Auth.',
+        );
+      }
 
       if (!mounted) return;
       Navigator.pushReplacement(

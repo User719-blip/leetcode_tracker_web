@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 type AdminAction = "listUsers" | "addUser" | "deleteUser";
+const usernamePattern = /^[a-zA-Z0-9_-]{1,30}$/;
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -41,18 +42,19 @@ Deno.serve(async (req) => {
       return jsonResponse(401, { error: "Missing authorization token" });
     }
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: authHeader,
-        },
-      },
-    });
+    const accessToken = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : authHeader;
+    if (!accessToken) {
+      return jsonResponse(401, { error: "Invalid authorization token" });
+    }
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey);
 
     const {
       data: { user },
       error: userError,
-    } = await userClient.auth.getUser();
+    } = await userClient.auth.getUser(accessToken);
 
     if (userError || !user) {
       return jsonResponse(401, { error: "Unauthorized user" });
@@ -70,7 +72,12 @@ Deno.serve(async (req) => {
       return jsonResponse(403, { error: "Forbidden: admin access required" });
     }
 
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return jsonResponse(400, { error: "Invalid JSON payload" });
+    }
     const action = body?.action as AdminAction | undefined;
     const payload = body?.payload ?? {};
 
@@ -95,8 +102,10 @@ Deno.serve(async (req) => {
 
     if (action === "addUser") {
       const username = String(payload?.username ?? "").trim();
-      if (!username) {
-        return jsonResponse(400, { error: "Username is required" });
+      if (!usernamePattern.test(username)) {
+        return jsonResponse(400, {
+          error: "Username must be 1-30 chars using letters, numbers, underscore, or hyphen",
+        });
       }
 
       const { data, error } = await adminClient

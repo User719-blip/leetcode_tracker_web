@@ -1,9 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") ?? "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json",
 };
 
 Deno.serve(async (req) => {
@@ -37,18 +38,22 @@ Deno.serve(async (req) => {
     });
   }
 
-  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: {
-      headers: {
-        Authorization: authHeader,
-      },
-    },
-  });
+  const accessToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : authHeader;
+  if (!accessToken) {
+    return new Response(JSON.stringify({ error: "Invalid authorization token" }), {
+      status: 401,
+      headers: corsHeaders,
+    });
+  }
+
+  const userClient = createClient(supabaseUrl, supabaseAnonKey);
 
   const {
     data: { user },
     error: userError,
-  } = await userClient.auth.getUser();
+  } = await userClient.auth.getUser(accessToken);
 
   if (userError || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized user" }), {

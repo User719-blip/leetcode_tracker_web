@@ -1,0 +1,14 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "snapshots",
+    "rls_enabled": true,
+    "status": "✓ RLS enabled"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "rls_enabled": true,
+    "status": "✓ RLS enabled"
+  }
+]

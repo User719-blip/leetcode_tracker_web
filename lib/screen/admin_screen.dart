@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:leetcode_tracker_web/services/analitical_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:leetcode_tracker_web/theme/app_theme.dart';
+import 'package:leetcode_tracker_web/screen/admin_login_screen.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
@@ -23,17 +24,54 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   void initState() {
     super.initState();
-    loadUsers();
+    _ensureSessionAndLoadUsers();
+  }
+
+  Future<void> _ensureSessionAndLoadUsers() async {
+    final session = supabase.auth.currentSession;
+    if (session == null) {
+      if (!mounted) return;
+      setState(() {
+        loading = false;
+        errorMessage = 'Admin session missing. Please login again.';
+      });
+      await Future.delayed(const Duration(milliseconds: 250));
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
+      );
+      return;
+    }
+
+    await loadUsers();
   }
 
   Future<Map<String, dynamic>> _callAdminUsersFunction(
     String action, {
     Map<String, dynamic>? payload,
   }) async {
+    final session = supabase.auth.currentSession;
+    if (session == null) {
+      throw Exception('No active session. Please login again.');
+    }
+
     final response = await supabase.functions.invoke(
       'admin-users',
+      headers: {'Authorization': 'Bearer ${session.accessToken}'},
       body: {'action': action, if (payload != null) 'payload': payload},
     );
+
+    if (response.status == 401) {
+      await supabase.auth.signOut();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
+        );
+      }
+      throw Exception('Session expired. Please login again.');
+    }
 
     if (response.status != 200) {
       throw Exception(response.data?['error'] ?? 'Request failed');

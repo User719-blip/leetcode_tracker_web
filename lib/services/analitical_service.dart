@@ -263,7 +263,15 @@ class AnalyticsService {
   }
 
   Future<void> updateAllUsers() async {
-    final response = await supabase.functions.invoke('daily-update');
+    final session = supabase.auth.currentSession;
+    if (session == null) {
+      throw Exception('No active session. Please login again.');
+    }
+
+    final response = await supabase.functions.invoke(
+      'daily-update',
+      headers: {'Authorization': 'Bearer ${session.accessToken}'},
+    );
     if (response.status != 200) {
       throw Exception(response.data?['error'] ?? 'Failed to run daily update');
     }

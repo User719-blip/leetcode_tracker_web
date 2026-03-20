@@ -1,0 +1,42 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "snapshots",
+    "policyname": "Public read users",
+    "roles": "{public}",
+    "using_clause": "true",
+    "check_clause": null,
+    "policy_type": "SELECT",
+    "audit_note": "⚠ WARNING: Overly permissive (USING true or NULL)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "snapshots",
+    "policyname": "snapshots_read_public",
+    "roles": "{anon,authenticated}",
+    "using_clause": "true",
+    "check_clause": null,
+    "policy_type": "SELECT",
+    "audit_note": "⚠ WARNING: Overly permissive (USING true or NULL)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "policyname": "Public read users",
+    "roles": "{public}",
+    "using_clause": "true",
+    "check_clause": null,
+    "policy_type": "SELECT",
+    "audit_note": "⚠ WARNING: Overly permissive (USING true or NULL)"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "policyname": "users_read_public",
+    "roles": "{anon,authenticated}",
+    "using_clause": "true",
+    "check_clause": null,
+    "policy_type": "SELECT",
+    "audit_note": "⚠ WARNING: Overly permissive (USING true or NULL)"
+  }
+]

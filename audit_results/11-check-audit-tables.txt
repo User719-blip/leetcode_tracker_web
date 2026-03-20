@@ -1,0 +1,14 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "snapshots",
+    "table_type": "→ Standard data table",
+    "purpose": "Business data"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "table_type": "→ Standard data table",
+    "purpose": "Business data"
+  }
+]

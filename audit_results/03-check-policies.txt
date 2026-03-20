@@ -1,0 +1,16 @@
+[
+  {
+    "schemaname": "public",
+    "tablename": "snapshots",
+    "rls_enabled": true,
+    "policy_count": 2,
+    "status": "✓ OK: 2 policy/policies defined"
+  },
+  {
+    "schemaname": "public",
+    "tablename": "users",
+    "rls_enabled": true,
+    "policy_count": 2,
+    "status": "✓ OK: 2 policy/policies defined"
+  }
+]

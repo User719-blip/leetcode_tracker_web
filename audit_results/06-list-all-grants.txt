@@ -1,0 +1,58 @@
+[
+  {
+    "schema_name": "public",
+    "function_name": "get_latest_snapshots",
+    "grantee": "PUBLIC",
+    "privileges": "EXECUTE",
+    "audit_note": "→ Check context: PUBLIC has access to get_latest_snapshots"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_latest_snapshots",
+    "grantee": "anon",
+    "privileges": "EXECUTE",
+    "audit_note": "✓ OK: Public read-only RPC accessible to anonymous users"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_latest_snapshots",
+    "grantee": "authenticated",
+    "privileges": "EXECUTE",
+    "audit_note": "✓ OK: Public read-only RPC accessible to authenticated users"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_latest_snapshots",
+    "grantee": "service_role",
+    "privileges": "EXECUTE",
+    "audit_note": "→ Check context: service_role has access to get_latest_snapshots"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_weekly_comparison",
+    "grantee": "PUBLIC",
+    "privileges": "EXECUTE",
+    "audit_note": "→ Check context: PUBLIC has access to get_weekly_comparison"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_weekly_comparison",
+    "grantee": "anon",
+    "privileges": "EXECUTE",
+    "audit_note": "✓ OK: Public read-only RPC accessible to anonymous users"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_weekly_comparison",
+    "grantee": "authenticated",
+    "privileges": "EXECUTE",
+    "audit_note": "✓ OK: Public read-only RPC accessible to authenticated users"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_weekly_comparison",
+    "grantee": "service_role",
+    "privileges": "EXECUTE",
+    "audit_note": "→ Check context: service_role has access to get_weekly_comparison"
+  }
+]

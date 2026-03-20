@@ -7,21 +7,21 @@
       "type": "dart",
       "program": "lib/main.dart",
       "args": [
-        "--dart-define=SUPABASE_URL=https://sukxolpjeagqybohmjdk.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1a3hvbHBqZWFncXlib2htamRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTE0MTksImV4cCI6MjA4NzUyNzQxOX0.SACbyX5glCg0gjCXBTR5ZFfvBBv_96H_99uTeYItyrk",
+        "--dart-define=SUPABASE_URL=https://your-project.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=your-anon-key",
         "--dart-define=APP_ENV=dev"
       ]
     },
     {
-      "name": "leetcode_tracker_web (chrome)",
+       "name": "leetcode_tracker_web (chrome)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "args": [
         "-d",
         "chrome",
-        "--dart-define=SUPABASE_URL=https://sukxolpjeagqybohmjdk.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1a3hvbHBqZWFncXlib2htamRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTE0MTksImV4cCI6MjA4NzUyNzQxOX0.SACbyX5glCg0gjCXBTR5ZFfvBBv_96H_99uTeYItyrk",
+        "--dart-define=SUPABASE_URL=https://your-project.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=your-anon-key",
         "--dart-define=APP_ENV=dev"
       ]
     }

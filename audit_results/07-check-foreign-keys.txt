@@ -1,0 +1,12 @@
+[
+  {
+    "constraint_name": "snapshots_user_id_fkey",
+    "table_schema": "public",
+    "table_name": "snapshots",
+    "column_name": "user_id",
+    "referenced_table_schema": "public",
+    "referenced_table_name": "users",
+    "referenced_column_name": "id",
+    "status": "✓ OK: Foreign key is valid"
+  }
+]

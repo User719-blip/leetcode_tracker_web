@@ -1,0 +1,18 @@
+[
+  {
+    "schema_name": "public",
+    "function_name": "get_latest_snapshots",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.get_latest_snapshots()\n RETURNS TABLE(user_id uuid, username text, total integer, easy integer, medium integer, hard integer, ranking integer, date date)\n LANGUAGE sql\nAS $function$\r\n  select u.id,\r\n         u.username,\r\n         s.total,\r\n         s.easy,\r\n         s.medium,\r\n         s.hard,\r\n         s.ranking,\r\n         s.date\r\n  from users u\r\n  join lateral (\r\n      select *\r\n      from snapshots\r\n      where snapshots.user_id = u.id\r\n      order by date desc\r\n      limit 1\r\n  ) s on true;\r\n$function$\n",
+    "security_context": "SECURITY INVOKER",
+    "function_owner": "postgres",
+    "audit_note": "✓ INVOKER: Function runs as caller. Safer for public RPC"
+  },
+  {
+    "schema_name": "public",
+    "function_name": "get_weekly_comparison",
+    "function_definition": "CREATE OR REPLACE FUNCTION public.get_weekly_comparison()\n RETURNS TABLE(username text, latest_total integer, old_total integer, delta_total integer, latest_rank integer, old_rank integer, rank_improvement integer, hard_delta integer)\n LANGUAGE sql\nAS $function$\r\n  with latest_snapshots as (\r\n      select distinct on (user_id)\r\n        user_id,\r\n        total,\r\n        easy,\r\n        medium,\r\n        hard,\r\n        ranking,\r\n        date\r\n      from snapshots\r\n      order by user_id, date desc\r\n  ),\r\n  week_old_snapshots as (\r\n      select distinct on (user_id)\r\n        user_id,\r\n        total,\r\n        easy,\r\n        medium,\r\n        hard,\r\n        ranking,\r\n        date\r\n      from snapshots\r\n      where date <= current_date - interval '7 days'\r\n      order by user_id, date desc\r\n  )\r\n  select\r\n    u.username,\r\n    latest.total,\r\n    old.total,\r\n    (latest.total - old.total) as delta_total,\r\n    latest.ranking,\r\n    old.ranking,\r\n    (old.ranking - latest.ranking) as rank_improvement,\r\n    (latest.hard - old.hard) as hard_delta\r\n  from users u\r\n  join latest_snapshots latest on latest.user_id = u.id\r\n  join week_old_snapshots old on old.user_id = u.id;\r\n$function$\n",
+    "security_context": "SECURITY INVOKER",
+    "function_owner": "postgres",
+    "audit_note": "✓ INVOKER: Function runs as caller. Safer for public RPC"
+  }
+]
